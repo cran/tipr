@@ -1,0 +1,15 @@
+58c5837960178395cb29c922a47539b6 *DESCRIPTION
+cd02d662035d8f478e2975a8879bb1e3 *LICENSE
+960191f592d5e5935abdb523ea245147 *NAMESPACE
+bbed91af0cb1910b16b06212ac140752 *NEWS.md
+2b4a169f13ff586e414ac632a000bc0f *R/tip-helpers.R
+ba68eea5087e1d4831c113e724039786 *R/tip.R
+9145eb07ac0cc7d28f0abf2d53a37065 *R/tipr-package.R
+e27275469fd443ed898af8302f75e4fd *R/utils.R
+51afbd902d0e9dc79b2f01112580a438 *README.md
+a64a7ea44fcaa33c2d3ad0f7909cbc3e *man/pipe.Rd
+f551890da5a0f41005f8a39be85a1cd2 *man/tip_with_binary.Rd
+845f74dc51cbd0ffd6e71172c214c4c1 *man/tip_with_continuous.Rd
+ef17f78daa00658aa694ea4b5d6faa0e *man/tipr.Rd
+c51c6a62d318a7558360173ddd2255f1 *tests/testthat.R
+30ad7d7e0ddf926b72d26ac418927c66 *tests/testthat/test-tip-helpers.R
