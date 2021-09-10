@@ -23,6 +23,25 @@ get_limiting_bound <- function(lb = NULL, ub = NULL) {
   )
 }
 
+get_lm_limiting_bound <- function(lb = NULL, ub = NULL) {
+  if (is.null(lb) || is.null(ub)) {
+    stop("Please input a dataset `d` that contains your observed confidence interval. Be sure your column names match `lb_name` and `ub_name`",
+         call. = FALSE
+    )
+  }
+
+  if (lb > 0 && ub > 0) {
+    return(lb)
+  }
+  if (lb < 0 && ub < 0) {
+    return(ub)
+  }
+  stop_glue(
+    "You input: ({lb}, {ub})\n",
+    "Please input a significant result."
+  )
+}
+
 get_limiting_bound_adj <- function(b = NULL, lb = NULL, ub = NULL) {
   if (is.null(lb) || is.null(ub)) {
     stop("Please input a data frame `d` that contains for your observed confidence interval.",
@@ -163,9 +182,9 @@ tip_n <- function(p0, p1, gamma, b) {
   as.numeric(n)
 }
 
-# e_value <- function(lb, ub) {
-#   observed_covariate_e_value(lb, ub, 1, 1)
-# }
+e_value <- function(lb, ub) {
+  observed_covariate_e_value(lb, ub, 1, 1)
+}
 
 hr_transform <- function(hr) {
   (1 - (0.5^sqrt(hr))) / (1 - (0.5^sqrt(1 / hr)))
