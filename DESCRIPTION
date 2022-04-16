@@ -1,7 +1,7 @@
 Package: tipr
 Type: Package
 Title: Tipping Point Analyses
-Version: 0.3.0
+Version: 0.4.0
 Author: Lucy D'Agostino McGowan
 Maintainer: Lucy D'Agostino McGowan <lucydagostino@gmail.com>
 Description: The strength of evidence provided by epidemiological and observational 
@@ -15,10 +15,10 @@ Description: The strength of evidence provided by epidemiological and observatio
             study inconclusive.
 License: MIT + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: testthat, broom, dplyr, MASS
-Imports: glue, tibble, purrr
+Imports: glue, tibble, purrr, sensemakr
 NeedsCompilation: no
-Packaged: 2021-09-09 19:31:54 UTC; lucymcgowan
+Packaged: 2022-04-16 16:45:30 UTC; lucymcgowan
 Repository: CRAN
-Date/Publication: 2021-09-10 08:00:02 UTC
+Date/Publication: 2022-04-16 22:20:02 UTC
