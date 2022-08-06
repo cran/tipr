@@ -1,9 +1,11 @@
 Package: tipr
 Type: Package
 Title: Tipping Point Analyses
-Version: 0.4.1
-Author: Lucy D'Agostino McGowan
-Maintainer: Lucy D'Agostino McGowan <lucydagostino@gmail.com>
+Version: 1.0.0
+Authors@R: c(
+    person("Lucy", "D'Agostino McGowan", , "lucydagostino@gmail.com", 
+    role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6983-2759"))
+           )
 Description: The strength of evidence provided by epidemiological and observational 
             studies is inherently limited by the potential for unmeasured confounding. 
             We focus on three key quantities: the observed bound of the confidence interval
@@ -16,9 +18,15 @@ Description: The strength of evidence provided by epidemiological and observatio
 License: MIT + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+BugReports: https://github.com/LucyMcGowan/tipr/issues
 Suggests: testthat, broom, dplyr, MASS
 Imports: glue, tibble, purrr, sensemakr
+Depends: R (>= 2.10)
+LazyData: true
 NeedsCompilation: no
-Packaged: 2022-05-05 22:35:55 UTC; lucymcgowan
+Packaged: 2022-08-06 18:37:40 UTC; lucymcgowan
+Author: Lucy D'Agostino McGowan [aut, cre]
+    (<https://orcid.org/0000-0002-6983-2759>)
+Maintainer: Lucy D'Agostino McGowan <lucydagostino@gmail.com>
 Repository: CRAN
-Date/Publication: 2022-05-05 23:20:02 UTC
+Date/Publication: 2022-08-06 19:10:02 UTC
