@@ -2,25 +2,25 @@
 % Please edit documentation in R/adjust_coefficient.R
 \name{adjust_rr_with_binary}
 \alias{adjust_rr_with_binary}
-\title{Adjust an observed relative risk with a binary confounder}
+\title{Adjust an observed risk ratio with a binary confounder}
 \usage{
 adjust_rr_with_binary(
   effect_observed,
-  exposed_p,
-  unexposed_p,
+  exposed_confounder_prev,
+  unexposed_confounder_prev,
   confounder_outcome_effect,
   verbose = TRUE
 )
 }
 \arguments{
-\item{effect_observed}{Numeric positive value. Observed exposure - outcome relative risk.
+\item{effect_observed}{Numeric positive value. Observed exposure - outcome risk ratio.
 This can be the point estimate, lower confidence bound, or upper
 confidence bound.}
 
-\item{exposed_p}{Numeric between 0 and 1. Estimated prevalence of the
+\item{exposed_confounder_prev}{Numeric between 0 and 1. Estimated prevalence of the
 unmeasured confounder in the exposed population}
 
-\item{unexposed_p}{Numeric between 0 and 1. Estimated prevalence of the
+\item{unexposed_confounder_prev}{Numeric between 0 and 1. Estimated prevalence of the
 unmeasured confounder in the unexposed population}
 
 \item{confounder_outcome_effect}{Numeric positive value. Estimated relationship
@@ -33,7 +33,7 @@ Default: \code{TRUE}}
 Data frame.
 }
 \description{
-Adjust an observed relative risk with a binary confounder
+Adjust an observed risk ratio with a binary confounder
 }
 \examples{
 adjust_rr_with_binary(1.1, 0.5, 0.3, 1.3)

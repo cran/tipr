@@ -6,8 +6,8 @@
 \usage{
 adjust_hr_with_binary(
   effect_observed,
-  exposed_p,
-  unexposed_p,
+  exposed_confounder_prev,
+  unexposed_confounder_prev,
   confounder_outcome_effect,
   verbose = TRUE,
   hr_correction = FALSE
@@ -18,10 +18,10 @@ adjust_hr_with_binary(
 This can be the point estimate, lower confidence bound, or upper
 confidence bound.}
 
-\item{exposed_p}{Numeric between 0 and 1. Estimated prevalence of the
+\item{exposed_confounder_prev}{Numeric between 0 and 1. Estimated prevalence of the
 unmeasured confounder in the exposed population}
 
-\item{unexposed_p}{Numeric between 0 and 1. Estimated prevalence of the
+\item{unexposed_confounder_prev}{Numeric between 0 and 1. Estimated prevalence of the
 unmeasured confounder in the unexposed population}
 
 \item{confounder_outcome_effect}{Numeric positive value. Estimated relationship
@@ -31,8 +31,8 @@ between the unmeasured confounder and the outcome}
 Default: \code{TRUE}}
 
 \item{hr_correction}{Logical. Indicates whether to use a correction factor.
-The methods used for this function are based on relative risks. For rare
-outcomes, a hazard ratio approximates a relative risk. For common outcomes,
+The methods used for this function are based on risk ratios. For rare
+outcomes, a hazard ratio approximates a risk ratio. For common outcomes,
 a correction factor is needed. If you have a common outcome (>15\%),
 set this to \code{TRUE}. Default: \code{FALSE}.}
 }

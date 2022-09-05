@@ -8,7 +8,7 @@ get_limiting_bound <- function(lb = NULL, ub = NULL) {
   if (lb < 0 || ub < 0) {
     stop_glue(
       "You input: ({lb}, {ub})\n",
-      "We are expecting an odds ratio, hazard ratio, or relative risk,\n",
+      "We are expecting an odds ratio, hazard ratio, or risk ratio,\n",
       "therefore the bounds should not be less than 0."
     )
   }
@@ -52,7 +52,7 @@ get_limiting_bound_adj <- function(b = NULL,
   if (lb < 0 || ub < 0) {
     stop_glue(
       "You input: ({lb}, {ub})\n",
-      "We are expecting an odds ratio, hazard ratio, or relative risk,\n",
+      "We are expecting an odds ratio, hazard ratio, or risk ratio,\n",
       "therefore the lower or upper bounds in `d` should not be less than 0."
     )
   }
@@ -68,7 +68,7 @@ check_gamma <- function(gamma = NULL) {
   if (!is.null(gamma) && gamma < 0) {
     stop_glue(
       "You input:\n * `outcome_effect`: {gamma}\n",
-      "We are expecting a relative risk, odds ratio, or hazard ratio,\n",
+      "We are expecting a risk ratio, odds ratio, or hazard ratio,\n",
       "therefore `outcome_effect` should not be less than 0."
     )
   }
@@ -78,7 +78,7 @@ check_effect <- function(x) {
   if (x < 0) {
     stop_glue(
       "You input:\n * An observed effect of {x}\n",
-      "We are expecting a relative risk, odds ratio, or hazard ratio,\n",
+      "We are expecting a risk ratio, odds ratio, or hazard ratio,\n",
       "therefore your effect should not be less than 0."
     )
   }
@@ -88,22 +88,22 @@ check_effect <- function(x) {
 
 check_prevalences <- function(p0 = NULL, p1 = NULL) {
   if (is.null(p0)) {
-    if (p1 < 0 | p1 > 1) {
+    if (any(p1 < 0 | p1 > 1)) {
       stop_glue(
-        "You input:\n * `exposed_p`: {p1}\n",
+        "You input:\n * `exposed_confounder_prev`: {p1}\n",
         "The prevalences entered must be between 0 and 1."
       )
     }
   } else if (is.null(p1)) {
-    if (p0 < 0 | p0 > 1) {
+    if (any(p0 < 0 | p0 > 1)) {
       stop_glue(
-        "You input:\n * `unexposed_p`: {p0}\n",
+        "You input:\n * `unexposed_confounder_prev`: {p0}\n",
         "The prevalences entered must be between 0 and 1."
       )
     }
-  } else if (p1 < 0 | p0 < 0 | p1 > 1 | p0 > 1) {
+  } else if (any(p1 < 0 | p0 < 0 | p1 > 1 | p0 > 1)) {
     stop_glue(
-      "You input:\n * `unexposed_p`: {p0}\n * `exposed_p`: {p1}\n",
+      "You input:\n * `unexposed_confounder_prev`: {p0}\n * `exposed_confounder_prev`: {p1}\n",
       "The prevalences entered must be between 0 and 1."
     )
   }
@@ -114,7 +114,7 @@ tip_gamma <- function(p0 = NULL,
                       b = NULL) {
   if (is.null(p1) || is.null(p0)) {
     stop(
-      "Please input at least 2 of the following:\n * `unexposed_p`\n * `exposed_p`\n * `outcome_effect`",
+      "Please input at least 2 of the following:\n * `unexposed_confounder_prev`\n * `exposed_confounder_prev`\n * `outcome_effect`",
       call. = FALSE
     )
   }
@@ -125,10 +125,10 @@ tip_gamma <- function(p0 = NULL,
 
   if (gamma < 0) {
     stop_glue(
-      "Given these prevalences:\n * `unexposed_p`: {p0}\n * `exposed_p`: {p1}\n",
+      "Given these prevalences:\n * `unexposed_confounder_prev`: {p0}\n * `exposed_confounder_prev`: {p1}\n",
       "There does not exist an unmeasured confounder that could tip this.\n",
       "Please specifiy a larger prevalence difference.\n",
-      "(ie: make `unexposed_p` and `exposed_p` farther apart)."
+      "(ie: make `unexposed_confounder_prev` and `exposed_confounder_prev` farther apart)."
     )
   }
   as.numeric(gamma)
@@ -368,7 +368,7 @@ tip_p0 <- function(p1 = NULL,
                    b = NULL) {
   if (is.null(p1) || is.null(gamma)) {
     stop(
-      "Please input at least 2 of the following:\n * `unexposed_p`\n * `exposed_p`\n * `outcome_effect`.",
+      "Please input at least 2 of the following:\n * `unexposed_confounder_prev`\n * `exposed_confounder_prev`\n * `outcome_effect`.",
       call. = FALSE
     )
   }
@@ -380,7 +380,7 @@ tip_p0 <- function(p1 = NULL,
 
   if (p0 > 1 | p0 < 0) {
     stop_glue(
-      "Given these parameters:\n * `exposed_p`: {p1}\n * `outcome_effect`: {gamma}\n",
+      "Given these parameters:\n * `exposed_confounder_prev`: {p1}\n * `outcome_effect`: {gamma}\n",
       "There does not exist an unmeasured confounder that could tip this."
     )
   }
@@ -393,7 +393,7 @@ tip_p1 <- function(p0 = NULL,
                    b = NULL) {
   if (is.null(p0) || is.null(gamma)) {
     stop(
-      "Please input at least 2 of the following:\n * `unexposed_p`\n * `exposed_p`\n * `outcome_effect`.",
+      "Please input at least 2 of the following:\n * `unexposed_confounder_prev`\n * `exposed_confounder_prev`\n * `outcome_effect`.",
       call. = FALSE
     )
   }
@@ -405,7 +405,7 @@ tip_p1 <- function(p0 = NULL,
 
   if (p1 > 1 | p1 < 0) {
     stop_glue(
-      "Given these parameters:\n * `unexposed_p`: {p0}\n * `outcome_effect`: {gamma}\n",
+      "Given these parameters:\n * `unexposed_confounder_prev`: {p0}\n * `outcome_effect`: {gamma}\n",
       "There does not exist an unmeasured confounder that could tip this."
     )
   }
