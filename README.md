@@ -1,16 +1,17 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# tipr: R tools for tipping point sensitivity analyses
+# tipr: R tools for tipping point sensitivity analyses <img src="man/figures/logo.png" align="right" height="138" />
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/LucyMcGowan/tipr/workflows/R-CMD-check/badge.svg)](https://github.com/LucyMcGowan/tipr/actions)
+[![R-CMD-check](https://github.com/r-causal/tipr/workflows/R-CMD-check/badge.svg)](https://github.com/r-causal/tipr/actions)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.04495/status.svg)](https://doi.org/10.21105/joss.04495)
 <!-- badges: end -->
 
-**Authors:** [Lucy D’Agostino
-McGowan](https://www.lucymcgowan.com/)<br/> **License:**
-[MIT](https://opensource.org/licenses/MIT)
+**Authors:** [Lucy D’Agostino McGowan](https://www.lucymcgowan.com/),
+[Malcolm Barrett](https://malco.io/)<br/> **License:**
+[MIT](https://opensource.org/license/mit/)
 
 ## Installation
 
@@ -24,7 +25,7 @@ Or install the development version from GitHub:
 
 ``` r
 # install.packages(devtools)
-devtools::install_github("lucymcgowan/tipr")
+devtools::install_github("r-causal/tipr")
 ```
 
 ``` r
@@ -60,7 +61,7 @@ relationship using the measured confounder as follows:
 mod <- glm(outcome ~ exposure + measured_confounder, data = exdata_rr, 
            family = poisson)
 
-mod %>%
+mod |>
   broom::tidy(exponentiate = TRUE, conf.int = TRUE)
 ```
 
@@ -72,7 +73,12 @@ mod %>%
     ## 3 measured_confounder   2.43      0.0754     11.7  7.51e- 32   2.09      2.81
 
 We see the above example, the exposure-outcome relationship is 1.5 (95%
-CI: 1.09, 2.08).
+CI: 1.1, 2.1). Note, in practice when estimating the effect of an
+exposure on a binary outcome using a GLM with the Poisson distribution
+and log link function, it is important to use a sandwich estimator to
+appropriately estimate the variability (this can be done in R using the
+`sandwich` package), which in this case gives a very similar result (95%
+CI: 1.1, 2.0).
 
 ## Continuous unmeasured confounder example
 
@@ -90,17 +96,19 @@ between the unmeasured confounder and outcome needed to tip the analysis
 tip(effect_observed = 1.5, exposure_confounder_effect = 0.5)
 ```
 
-    ## The observed effect (1.5) WOULD be tipped by 1 unmeasured confounder
-    ## with the following specifications:
-    ##   * estimated difference in scaled means between the unmeasured confounder
-    ##     in the exposed population and unexposed population: 0.5
-    ##   * estimated relationship between the unmeasured confounder and the outcome: 2.25
+    ## ℹ The observed effect (1.5) WOULD be tipped by 1 unmeasured confounder with the
+    ##   following specifications:
+    ## • estimated difference in scaled means between the unmeasured confounder in the
+    ##   exposed population and unexposed population: 0.5
+    ## • estimated relationship between the unmeasured confounder and the outcome:
+    ##   2.25
 
     ## # A tibble: 1 × 5
-    ##   effect_adjusted effect_observed exposure_confounder_effect confounder_outcome…
-    ##             <dbl>           <dbl>                      <dbl>               <dbl>
-    ## 1               1             1.5                        0.5                2.25
-    ## # … with 1 more variable: n_unmeasured_confounders <dbl>
+    ##   effect_adjusted effect_observed exposure_confounder_e…¹ confounder_outcome_e…²
+    ##             <dbl>           <dbl>                   <dbl>                  <dbl>
+    ## 1               1             1.5                     0.5                   2.25
+    ## # ℹ abbreviated names: ¹​exposure_confounder_effect, ²​confounder_outcome_effect
+    ## # ℹ 1 more variable: n_unmeasured_confounders <dbl>
 
 A hypothetical unobserved continuous confounder a scaled mean difference
 between exposure groups of `0.5` would need a relationship of at least
@@ -110,17 +118,19 @@ between exposure groups of `0.5` would need a relationship of at least
 tip(effect_observed = 1.09, exposure_confounder_effect = 0.5)
 ```
 
-    ## The observed effect (1.09) WOULD be tipped by 1 unmeasured confounder
-    ## with the following specifications:
-    ##   * estimated difference in scaled means between the unmeasured confounder
-    ##     in the exposed population and unexposed population: 0.5
-    ##   * estimated relationship between the unmeasured confounder and the outcome: 1.19
+    ## ℹ The observed effect (1.09) WOULD be tipped by 1 unmeasured confounder with
+    ##   the following specifications:
+    ## • estimated difference in scaled means between the unmeasured confounder in the
+    ##   exposed population and unexposed population: 0.5
+    ## • estimated relationship between the unmeasured confounder and the outcome:
+    ##   1.19
 
     ## # A tibble: 1 × 5
-    ##   effect_adjusted effect_observed exposure_confounder_effect confounder_outcome…
-    ##             <dbl>           <dbl>                      <dbl>               <dbl>
-    ## 1               1            1.09                        0.5                1.19
-    ## # … with 1 more variable: n_unmeasured_confounders <dbl>
+    ##   effect_adjusted effect_observed exposure_confounder_e…¹ confounder_outcome_e…²
+    ##             <dbl>           <dbl>                   <dbl>                  <dbl>
+    ## 1               1            1.09                     0.5                   1.19
+    ## # ℹ abbreviated names: ¹​exposure_confounder_effect, ²​confounder_outcome_effect
+    ## # ℹ 1 more variable: n_unmeasured_confounders <dbl>
 
 A hypothetical unobserved continuous confounder a scaled mean difference
 between exposure groups of `0.5` would need a relationship of at least
@@ -132,12 +142,12 @@ confounder looked like. First we will calculate the difference in scaled
 means.
 
 ``` r
-exdata_rr %>%
-  dplyr::group_by(exposure) %>%
-  dplyr::summarise(m = mean(.unmeasured_confounder / sd(.unmeasured_confounder))) %>%
+exdata_rr |>
+  dplyr::group_by(exposure) |>
+  dplyr::summarise(m = mean(.unmeasured_confounder / sd(.unmeasured_confounder))) |>
   tidyr::pivot_wider(names_from = exposure,
               values_from = m,
-              names_prefix = "u_") %>%
+              names_prefix = "u_") |>
   dplyr::summarise(estimate = u_1 - u_0)
 ```
 
@@ -147,8 +157,8 @@ exdata_rr %>%
     ## 1    0.494
 
 Now we can refit the above model with this unmeasured confounder
-included. According to our tipping point result, as long as the relative
-risk of the unmeasured confounder and outcome in the model is greater
+included. According to our tipping point result, as long as the risk
+ratio of the unmeasured confounder and outcome in the model is greater
 than 2.25, the result that we observed will be “tipped” (the point
 estimate will cross the null).
 
@@ -158,7 +168,7 @@ mod_true <- glm(
   data = exdata_rr, 
   family = poisson)
 
-mod_true %>%
+mod_true |>
   broom::tidy(exponentiate = TRUE, conf.int = TRUE)
 ```
 
@@ -192,17 +202,21 @@ tip_with_binary(effect_observed = 1.09,
                 unexposed_confounder_prev = 0.10)
 ```
 
-    ## The observed effect (1.09) WOULD be tipped by 1 unmeasured confounder
-    ## with the following specifications:
-    ##   * estimated prevalence of the unmeasured confounder in the exposed population: 0.25
-    ##   * estimated prevalence of the unmeasured confounder in the unexposed population: 0.1
-    ##   * estimated relationship between the unmeasured confounder and the outcome: 1.64
+    ## ℹ The observed effect (1.09) WOULD be tipped by 1 unmeasured confounder with
+    ##   the following specifications:
+    ## • estimated prevalence of the unmeasured confounder in the exposed population:
+    ##   0.25
+    ## • estimated prevalence of the unmeasured confounder in the unexposed
+    ##   population: 0.1
+    ## • estimated relationship between the unmeasured confounder and the outcome:
+    ##   1.64
 
     ## # A tibble: 1 × 6
-    ##   effect_adjusted effect_observed exposed_confounder_prev unexposed_confounder_…
+    ##   effect_adjusted effect_observed exposed_confounder_prev unexposed_confounder…¹
     ##             <dbl>           <dbl>                   <dbl>                  <dbl>
     ## 1               1            1.09                    0.25                    0.1
-    ## # … with 2 more variables: confounder_outcome_effect <dbl>,
+    ## # ℹ abbreviated name: ¹​unexposed_confounder_prev
+    ## # ℹ 2 more variables: confounder_outcome_effect <dbl>,
     ## #   n_unmeasured_confounders <dbl>
 
 A hypothetical unobserved binary confounder that is prevalent in 10% of
@@ -221,17 +235,19 @@ tip(effect_observed = 1.09,
     confounder_outcome_effect = 1.05)
 ```
 
-    ## The observed effect (1.09) WOULD be tipped by 7 unmeasured confounders
-    ## with the following specifications:
-    ##   * estimated difference in scaled means between the unmeasured confounder
-    ##     in the exposed population and unexposed population: 0.25
-    ##   * estimated relationship between the unmeasured confounder and the outcome: 1.05
+    ## ℹ The observed effect (1.09) WOULD be tipped by 7 unmeasured confounders with
+    ##   the following specifications:
+    ## • estimated difference in scaled means between the unmeasured confounder in the
+    ##   exposed population and unexposed population: 0.25
+    ## • estimated relationship between the unmeasured confounder and the outcome:
+    ##   1.05
 
     ## # A tibble: 1 × 5
-    ##   effect_adjusted effect_observed exposure_confounder_effect confounder_outcome…
-    ##             <dbl>           <dbl>                      <dbl>               <dbl>
-    ## 1               1            1.09                       0.25                1.05
-    ## # … with 1 more variable: n_unmeasured_confounders <dbl>
+    ##   effect_adjusted effect_observed exposure_confounder_e…¹ confounder_outcome_e…²
+    ##             <dbl>           <dbl>                   <dbl>                  <dbl>
+    ## 1               1            1.09                    0.25                   1.05
+    ## # ℹ abbreviated names: ¹​exposure_confounder_effect, ²​confounder_outcome_effect
+    ## # ℹ 1 more variable: n_unmeasured_confounders <dbl>
 
 It would take about `7` independent standardized Normal unmeasured
 confounders with a mean difference between exposure groups of 0.25 and a
@@ -249,25 +265,26 @@ function **broom** that can be directly fed into the `tip()` function.
 ``` r
 if (requireNamespace("broom", quietly = TRUE) &&  requireNamespace("dplyr", quietly = TRUE)) {
   glm(outcome ~ exposure + measured_confounder, data = exdata_rr, 
-           family = poisson) %>%
-    broom::tidy(conf.int = TRUE, exponentiate = TRUE) %>%
-    dplyr::filter(term == "exposure") %>%
-    dplyr::pull(conf.low) %>%
+           family = poisson) |>
+    broom::tidy(conf.int = TRUE, exponentiate = TRUE) |>
+    dplyr::filter(term == "exposure") |>
+    dplyr::pull(conf.low) |>
     tip(confounder_outcome_effect = 2.5)
 }
 ```
 
-    ## The observed effect (1.09) WOULD be tipped by 1 unmeasured confounder
-    ## with the following specifications:
-    ##   * estimated difference in scaled means between the unmeasured confounder
-    ##     in the exposed population and unexposed population: 0.09
-    ##   * estimated relationship between the unmeasured confounder and the outcome: 2.5
+    ## ℹ The observed effect (1.09) WOULD be tipped by 1 unmeasured confounder with
+    ##   the following specifications:
+    ## • estimated difference in scaled means between the unmeasured confounder in the
+    ##   exposed population and unexposed population: 0.09
+    ## • estimated relationship between the unmeasured confounder and the outcome: 2.5
 
     ## # A tibble: 1 × 5
-    ##   effect_adjusted effect_observed exposure_confounder_effect confounder_outcome…
-    ##             <dbl>           <dbl>                      <dbl>               <dbl>
-    ## 1               1            1.09                     0.0907                 2.5
-    ## # … with 1 more variable: n_unmeasured_confounders <dbl>
+    ##   effect_adjusted effect_observed exposure_confounder_e…¹ confounder_outcome_e…²
+    ##             <dbl>           <dbl>                   <dbl>                  <dbl>
+    ## 1               1            1.09                  0.0907                    2.5
+    ## # ℹ abbreviated names: ¹​exposure_confounder_effect, ²​confounder_outcome_effect
+    ## # ℹ 1 more variable: n_unmeasured_confounders <dbl>
 
 ## Code of Conduct
 

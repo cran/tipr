@@ -24,7 +24,7 @@ adjust_coef <-
   function(effect_observed,
            exposure_confounder_effect,
            confounder_outcome_effect,
-           verbose = TRUE) {
+           verbose = getOption("tipr.verbose", TRUE)) {
     effect_adj <-
       effect_observed - confounder_outcome_effect * exposure_confounder_effect
     o <- tibble::tibble(
@@ -34,32 +34,37 @@ adjust_coef <-
       confounder_outcome_effect = confounder_outcome_effect
     )
     if (verbose) {
-      message_glue(
-        "The observed effect ({round(effect_observed, 2)}) ",
-        "is updated to {round(effect_adj, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated difference in scaled means: {exposure_confounder_effect}",
-        "\n  * estimated relationship between the unmeasured confounder and the ",
-        "outcome: {confounder_outcome_effect}\n"
-      )
+      message_cli(c(
+        "i" = "The observed effect ({round(effect_observed, 2)}) \\
+        is updated to {round(effect_adj, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated difference in scaled means: {exposure_confounder_effect}",
+        "*" = "estimated relationship between the unmeasured confounder and the \\
+        outcome: {confounder_outcome_effect}"
+      ))
     }
     return(o)
   }
 
-#' Adjust an observed coefficient from a loglinear model with a binary confounder
+#' Adjust an observed coefficient from a regression model with a binary
+#' confounder
 #'
-#' @param effect_observed Numeric. Observed exposure - outcome effect from a loglinear
-#'    model. This can be the beta coefficient, the lower confidence bound of
-#'    the beta coefficient, or the upper confidence bound of the beta
-#'    coefficient.
-#' @param exposed_confounder_prev Numeric between 0 and 1. Estimated prevalence of the
-#'    unmeasured confounder in the exposed population
-#' @param unexposed_confounder_prev Numeric between 0 and 1. Estimated prevalence of the
-#'    unmeasured confounder in the unexposed population
-#' @param confounder_outcome_effect Numeric. Estimated relationship
-#'    between the unmeasured confounder and the outcome.
+#' @param effect_observed Numeric. Observed exposure - outcome effect from a
+#'   loglinear model. This can be the beta coefficient, the lower confidence
+#'   bound of the beta coefficient, or the upper confidence bound of the beta
+#'   coefficient.
+#' @param exposed_confounder_prev Numeric between 0 and 1. Estimated prevalence
+#'   of the unmeasured confounder in the exposed population
+#' @param unexposed_confounder_prev Numeric between 0 and 1. Estimated
+#'   prevalence of the unmeasured confounder in the unexposed population
+#' @param confounder_outcome_effect Numeric. Estimated relationship between the
+#'   unmeasured confounder and the outcome.
+#' @param loglinear Logical. Calculate the adjusted coefficient from a loglinear
+#'   model instead of a linear model (the default). When `loglinear = FALSE`,
+#'   `adjust_coef_with_binary()` is equivalent to `adjust_coef()` where
+#'   `exposure_confounder_effect` is the difference in prevalences.
 #' @param verbose Logical. Indicates whether to print informative message.
-#'    Default: `TRUE`
+#'   Default: `TRUE`
 #'
 #' @return Data frame.
 #' @export
@@ -71,33 +76,46 @@ adjust_coef_with_binary <-
            exposed_confounder_prev,
            unexposed_confounder_prev,
            confounder_outcome_effect,
-           verbose = TRUE) {
+           loglinear = FALSE,
+           verbose = getOption("tipr.verbose", TRUE)) {
     check_prevalences(unexposed_confounder_prev, exposed_confounder_prev)
-
-    confounding_factor <- log((exp(confounder_outcome_effect) * exposed_confounder_prev + (1 - exposed_confounder_prev)) /
-                                (
-                                  exp(confounder_outcome_effect) * unexposed_confounder_prev + (1 - unexposed_confounder_prev)
-                                ))
-
-    effect_adj <- effect_observed - confounding_factor
-    o <- tibble::tibble(
-      effect_adjusted = effect_adj,
-      effect_observed = effect_observed,
-      exposed_confounder_prev = exposed_confounder_prev,
-      unexposed_confounder_prev = unexposed_confounder_prev,
-      confounder_outcome_effect = confounder_outcome_effect
-    )
-    if (verbose) {
-      message_glue(
-        "The observed effect ({round(effect_observed, 2)}) ",
-        "is updated to {round(effect_adj, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated prevalence of the unmeasured confounder ",
-        "in the exposed population: {round(exposed_confounder_prev, 2)}\n  * estimated prevalence of ",
-        "the unmeasured confounder in the unexposed population: {round(unexposed_confounder_prev, 2)}",
-        "\n  * estimated relationship between the unmeasured confounder and the ",
-        "outcome: {round(confounder_outcome_effect, 2)}\n"
+    if (loglinear) {
+      confounding_factor <- log((exp(confounder_outcome_effect) * exposed_confounder_prev + (1 - exposed_confounder_prev)) /
+                                  (
+                                    exp(confounder_outcome_effect) * unexposed_confounder_prev + (1 - unexposed_confounder_prev)
+                                  ))
+      effect_adj <- effect_observed - confounding_factor
+      o <- tibble::tibble(
+        effect_adjusted = effect_adj,
+        effect_observed = effect_observed,
+        exposed_confounder_prev = exposed_confounder_prev,
+        unexposed_confounder_prev = unexposed_confounder_prev,
+        confounder_outcome_effect = confounder_outcome_effect
       )
+    } else {
+      o <- adjust_coef(
+        effect_observed = effect_observed,
+        exposure_confounder_effect = exposed_confounder_prev - unexposed_confounder_prev,
+        confounder_outcome_effect = confounder_outcome_effect,
+        verbose = FALSE
+      )
+    }
+
+
+    if (verbose) {
+      message_cli(c(
+        "i" = "The observed effect ({round(effect_observed, 2)}) \\
+        is updated to {round(o$effect_adjusted, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated prevalence of the unmeasured confounder \\
+        in the exposed population: {round(exposed_confounder_prev, 2)}",
+        "*" = "estimated prevalence of \\
+        the unmeasured confounder in the unexposed population: \\
+        {round(unexposed_confounder_prev, 2)}",
+
+        "*" = "estimated relationship between the unmeasured confounder and \\
+        the outcome: {round(confounder_outcome_effect, 2)}"
+      ))
     }
     return(o)
   }
@@ -137,14 +155,14 @@ adjust_rr <-
       confounder_outcome_effect = confounder_outcome_effect
     )
     if (verbose) {
-      message_glue(
-        "The observed effect (RR: {round(rr, 2)}) ",
-        "is updated to RR: {round(rr_adj, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated difference in scaled means: {exposure_confounder_effect}",
-        "\n  * estimated relationship (RR) between the unmeasured confounder and the ",
-        "outcome: {round(confounder_outcome_effect, 2)}\n"
-      )
+      message_cli(c(
+        "i" = "The observed effect (RR: {round(rr, 2)}) \\
+        is updated to RR: {round(rr_adj, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated difference in scaled means: {exposure_confounder_effect}",
+        "*" = "estimated relationship (RR) between the unmeasured confounder \\
+        and the outcome: {round(confounder_outcome_effect, 2)}"
+      ))
     }
     return(o)
   }
@@ -176,7 +194,7 @@ adjust_hr <-
   function(effect_observed,
            exposure_confounder_effect,
            confounder_outcome_effect,
-           verbose = TRUE,
+           verbose = getOption("tipr.verbose", TRUE),
            hr_correction = FALSE) {
     hr <- effect_observed
     if (hr_correction) {
@@ -194,17 +212,20 @@ adjust_hr <-
 
 
     if (verbose) {
-      message_glue(
-        "The observed effect ({output_type}: {round(o$rr_observed, 2)}) ",
-        "is updated to {output_type}: {round(o$rr_adjusted, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated difference in scaled means: {exposure_confounder_effect}",
-        "\n  * estimated relationship ({output_type}) between the unmeasured confounder and the ",
-        "outcome: {round(confounder_outcome_effect, 2)}\n",
-        "{ifelse(hr_correction, 'You opted to use the hazard ratio correction to convert your hazard ratios to approximate risk ratios.\nThis is a good idea if the outcome is common (>15%).',
-      '')}",
+      message_cli(c(
+        "i" = "The observed effect ({output_type}: {round(o$rr_observed, 2)}) \\
+        is updated to {output_type}: {round(o$rr_adjusted, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated difference in scaled means: {exposure_confounder_effect}",
+        "*" = "estimated relationship ({output_type}) between the unmeasured \\
+        confounder and the outcome: {round(confounder_outcome_effect, 2)}"
+      ))
 
-      )
+      if (hr_correction) message_cli(c(
+        "i" = "You opted to use the hazard ratio correction to convert your \\
+        hazard ratios to approximate risk ratios. \\
+        This is a good idea if the outcome is common (>15%)"
+      ))
     }
 
     if (!hr_correction) {
@@ -241,7 +262,7 @@ adjust_or <-
   function(effect_observed,
            exposure_confounder_effect,
            confounder_outcome_effect,
-           verbose = TRUE,
+           verbose = getOption("tipr.verbose", TRUE),
            or_correction = FALSE) {
     or <- effect_observed
     if (or_correction) {
@@ -258,16 +279,21 @@ adjust_or <-
     output_type <- ifelse(or_correction, 'RR', 'OR')
 
     if (verbose) {
-      message_glue(
-        "The observed effect ({output_type}: {round(o$rr_observed, 2)}) ",
-        "is updated to {output_type}: {round(o$rr_adjusted, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated difference in scaled means: {exposure_confounder_effect}",
-        "\n  * estimated relationship ({output_type}) between the unmeasured confounder and the ",
-        "outcome: {round(confounder_outcome_effect, 2)}\n",
-        "{ifelse(or_correction, 'You opted to use the odds ratio correction to convert your odds ratios to approximate risk ratios.\nThis is a good idea if the outcome is common (>15%).',
-      '')}"
-      )
+      message_cli(c(
+        "i" = "The observed effect ({output_type}: {round(o$rr_observed, 2)}) \\
+        is updated to {output_type}: {round(o$rr_adjusted, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated difference in scaled means: {exposure_confounder_effect}",
+        "*" = "estimated relationship ({output_type}) between the unmeasured \\
+        confounder and the  outcome: {round(confounder_outcome_effect, 2)}"
+      ))
+
+
+      if (or_correction) message_cli(c(
+        "i" = "You opted to use the odds ratio correction to convert your \\
+        odds ratio to approximate risk ratios. \\
+        This is a good idea if the outcome is common (>15%)"
+      ))
     }
 
     if (!or_correction) {
@@ -302,7 +328,7 @@ adjust_rr_with_binary <-
            exposed_confounder_prev,
            unexposed_confounder_prev,
            confounder_outcome_effect,
-           verbose = TRUE) {
+           verbose = getOption("tipr.verbose", TRUE)) {
     rr <- effect_observed
     check_prevalences(unexposed_confounder_prev, exposed_confounder_prev)
 
@@ -319,16 +345,17 @@ adjust_rr_with_binary <-
       confounder_outcome_effect = confounder_outcome_effect
     )
     if (verbose) {
-      message_glue(
-        "The observed effect ({round(rr, 2)}) ",
-        "is updated to {round(rr_adj, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated prevalence of the unmeasured confounder ",
-        "in the exposed population: {round(exposed_confounder_prev, 2)}\n  * estimated prevalence of ",
-        "the unmeasured confounder in the unexposed population: {round(unexposed_confounder_prev, 2)}",
-        "\n  * estimated relationship between the unmeasured confounder and the ",
-        "outcome: {round(confounder_outcome_effect, 2)}\n"
-      )
+      message_cli(c(
+        "The observed effect ({round(rr, 2)}) \\
+        is updated to {round(rr_adj, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated prevalence of the unmeasured confounder \\
+        in the exposed population: {round(exposed_confounder_prev, 2)}",
+        "*" = "estimated prevalence of the unmeasured confounder in the \\
+        unexposed population: {round(unexposed_confounder_prev, 2)}",
+        "*" = "estimated relationship between the unmeasured confounder and \\
+        the outcome: {round(confounder_outcome_effect, 2)}"
+      ))
     }
     return(o)
   }
@@ -361,7 +388,7 @@ adjust_hr_with_binary <-
            exposed_confounder_prev,
            unexposed_confounder_prev,
            confounder_outcome_effect,
-           verbose = TRUE,
+           verbose = getOption("tipr.verbose", TRUE),
            hr_correction = FALSE) {
     hr <- effect_observed
     if (hr_correction) {
@@ -379,18 +406,23 @@ adjust_hr_with_binary <-
     output_type <- ifelse(hr_correction, 'RR', 'HR')
 
     if (verbose) {
-      message_glue(
-        "The observed effect ({output_type}: {round(o$rr_observed, 2)}) ",
-        "is updated to {output_type}: {round(o$rr_adjusted, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated prevalence of the unmeasured confounder ",
-        "in the exposed population: {round(exposed_confounder_prev, 2)}\n  * estimated prevalence of ",
-        "the unmeasured confounder in the unexposed population: {round(unexposed_confounder_prev, 2)}",
-        "\n  * estimated relationship between the unmeasured confounder and the ",
-        "outcome: {round(confounder_outcome_effect, 2)}\n",
-        "{ifelse(hr_correction, 'You opted to use the hazard ratio correction to convert your hazard ratios to approximate risk ratios.\nThis is a good idea if the outcome is common (>15%).',
-      '')}"
-      )
+      message_cli(c(
+        "i" = "The observed effect ({output_type}: {round(o$rr_observed, 2)}) \\
+        is updated to {output_type}: {round(o$rr_adjusted, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated prevalence of the unmeasured confounder \\
+        in the exposed population: {round(exposed_confounder_prev, 2)}",
+        "*" = "estimated prevalence of the unmeasured confounder in the \\
+        unexposed population: {round(unexposed_confounder_prev, 2)}",
+        "*" = "estimated relationship between the unmeasured confounder \\
+        and the outcome: {round(confounder_outcome_effect, 2)}"
+      ))
+
+      if (hr_correction) message_cli(c(
+        "i" = "You opted to use the hazard ratio correction to convert your \\
+        hazard ratios to approximate risk ratios. \\
+        This is a good idea if the outcome is common (>15%)"
+      ))
     }
 
     if (!hr_correction) {
@@ -431,7 +463,7 @@ adjust_or_with_binary <-
            exposed_confounder_prev,
            unexposed_confounder_prev,
            confounder_outcome_effect,
-           verbose = TRUE,
+           verbose = getOption("tipr.verbose", TRUE),
            or_correction = FALSE) {
     or <- effect_observed
     if (or_correction) {
@@ -449,18 +481,23 @@ adjust_or_with_binary <-
     output_type <- ifelse(or_correction, 'RR', 'OR')
 
     if (verbose) {
-      message_glue(
-        "The observed effect ({output_type}: {round(o$rr_observed, 2)}) ",
-        "is updated to {output_type}: {round(o$rr_adjusted, 2)} ",
-        "by a confounder with the following specifications:",
-        "\n  * estimated prevalence of the unmeasured confounder ",
-        "in the exposed population: {round(exposed_confounder_prev, 2)}\n  * estimated prevalence of ",
-        "the unmeasured confounder in the unexposed population: {round(unexposed_confounder_prev, 2)}",
-        "\n  * estimated relationship between the unmeasured confounder and the ",
-        "outcome: {round(confounder_outcome_effect, 2)}\n",
-        "{ifelse(or_correction, 'You opted to use the odds ratio correction to convert your odds ratios to approximate risk ratios.\nThis is a good idea if the outcome is common (>15%).',
-      '')}"
-      )
+      message_cli(c(
+        "*" = "The observed effect ({output_type}: {round(o$rr_observed, 2)}) \\
+        is updated to {output_type}: {round(o$rr_adjusted, 2)} \\
+        by a confounder with the following specifications:",
+        "*" = "estimated prevalence of the unmeasured confounder \\
+        in the exposed population: {round(exposed_confounder_prev, 2)}",
+        "*" = "estimated prevalence of the unmeasured confounder in the \\
+        unexposed population: {round(unexposed_confounder_prev, 2)}",
+        "*" = "estimated relationship between the unmeasured confounder and \\
+        the outcome: {round(confounder_outcome_effect, 2)}"
+      ))
+
+      if (or_correction) message_cli(c(
+        "i" = "You opted to use the odds ratio correction to convert your \\
+        odds ratios to approximate risk ratios. \\
+        This is a good idea if the outcome is common (>15%)"
+      ))
     }
 
     if (!or_correction) {

@@ -1,3 +1,9 @@
+# tipr 1.0.2
+
+* `adjust_coef_with_binary()` now assumes the coefficient is from a linear model rather than loglinear. Use `loglinear = TRUE` to get the old behavior. (#12, @malcolmbarrett)
+* Fixed roxygen issue with package documentation
+* Update messaging and errors
+
 # tipr 1.0.1
 
 * Fixed bug, functions based on the `adjust_coef_with_binary` function had the old parameter names (`exposed_p` and `unexposed_p`). These were changed to match the other new updates from version 1.0.0 to now be `exposed_confounder_prev` and `unexposed_confounder_prev`.
